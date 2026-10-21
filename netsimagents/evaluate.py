@@ -15,17 +15,17 @@ from .workflow import MultiAgentWorkflow, SingleLLMBaseline
 SYSTEMS = ("single_llm_shot", "single_llm_retry", "multi_agent")
 
 
-def build(system: str, llm: LLM):
-    return {"single_llm_shot": lambda: SingleLLMBaseline(llm, retries=0),
-            "single_llm_retry": lambda: SingleLLMBaseline(llm, retries=3),
-            "multi_agent": lambda: MultiAgentWorkflow(llm)}[system]()
+def build(system: str, llm: LLM, fmt: str = "json"):
+    return {"single_llm_shot": lambda: SingleLLMBaseline(llm, retries=0, fmt=fmt),
+            "single_llm_retry": lambda: SingleLLMBaseline(llm, retries=3, fmt=fmt),
+            "multi_agent": lambda: MultiAgentWorkflow(llm, fmt=fmt)}[system]()
 
 
-def run_all(llm: LLM, systems=SYSTEMS, limit: int | None = None, out_dir: str | None = None) -> list[dict]:
+def run_all(llm: LLM, systems=SYSTEMS, limit: int | None = None, out_dir: str | None = None, fmt: str = "json") -> list[dict]:
     scs = scenarios()[:limit] if limit else scenarios()
     rows, traces = [], []
     for system in systems:
-        wf = build(system, llm)
+        wf = build(system, llm, fmt)
         for scn in scs:
             outcome = wf.run(scn.text)
             row = score(scn, outcome)
@@ -89,6 +89,7 @@ def main(argv: list[str]) -> None:  # pragma: no cover - needs a real model
     ap.add_argument("--openai-url")
     ap.add_argument("--model")
     ap.add_argument("--limit", type=int)
+    ap.add_argument("--format", choices=("json", "xml"), default="json", help="configuration format the LLM writes")
     ap.add_argument("--out", default="results")
     a = ap.parse_args(argv)
     if a.hf_model:
@@ -99,7 +100,7 @@ def main(argv: list[str]) -> None:  # pragma: no cover - needs a real model
         from .llm import OpenAICompatLLM
 
         llm = OpenAICompatLLM(a.openai_url, a.model)
-    rows = run_all(llm, limit=a.limit, out_dir=a.out)
+    rows = run_all(llm, limit=a.limit, out_dir=a.out, fmt=a.format)
     summary = summarise(rows)
     summary["llm"] = llm.name
     Path(a.out, "summary.json").write_text(json.dumps(summary, indent=1, default=float))

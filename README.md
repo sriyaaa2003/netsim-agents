@@ -13,6 +13,7 @@ simulator easier to use, and where does a human still have to step in?
 | Schema and validator | `netsimagents/schema.py` | 12 parameters with types, ranges, defaults and dependencies (bandwidth depends on carrier, hysteresis needs more than one cell). Deterministic tool, not an agent. |
 | Agents | `netsimagents/agents.py` | **Planner** (text to plan, can ask for clarification), **Configurator** (plan to config, fixes errors), **Reviewer** (checks the config against the user's intent), **Analyst** (summarises results against the objective). |
 | Workflow | `netsimagents/workflow.py` | Closed loop: validator and simulator errors, and Reviewer objections, go back to the Configurator, up to 4 attempts. Every step is written to a JSON trace. Also two single-LLM baselines. |
+| XML mode | `netsimagents/xmlio.py` | Optional XML scenario format (`--format xml`): one `<scenario>` element, one child element per parameter. A deterministic first stage extracts the document, rejects DOCTYPE and entity declarations, checks it is well-formed, checks structure (root, duplicates, nesting) and converts values to the schema types; the schema validator, simulator and correctness check then run as for JSON. Failures go back to the agents with specific codes such as `xml_not_well_formed`. |
 | LLM backends | `netsimagents/llm.py` | Hugging Face model in-process (used on Kaggle GPUs), any OpenAI-compatible endpoint (for example a local Ollama), and a scripted test double. Counts calls and time. |
 | Benchmark | `netsimagents/benchmark.py` | 46 scenarios in six categories with ground-truth checks. |
 | Evaluation | `netsimagents/evaluate.py` | Runs the three systems, bootstrap confidence intervals, exact McNemar tests. |
@@ -41,10 +42,12 @@ System 2 exists so that the effect of the *roles* is separated from the effect o
 ## Run
 
 ```bash
-python -m pytest -q                      # 90 tests, no model needed (scripted LLM)
+python -m pytest -q                      # 119 tests, no model needed (scripted LLM)
 python -m netsimagents.evaluate --openai-url http://localhost:11434/v1 --model qwen2.5:7b   # local Ollama
 python -m netsimagents.evaluate --hf-model Qwen/Qwen2.5-7B-Instruct                         # GPU box
 ```
+
+XML mode: add `--format xml` to either command. The XML stages are covered by unit tests with a scripted LLM; **no evaluation with a real model has been run in XML mode**, and the reported results are for JSON mode.
 
 `kaggle_build/` holds the dataset and kernel used for the GPU run.
 

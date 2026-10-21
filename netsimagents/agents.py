@@ -28,6 +28,17 @@ CONFIGURATOR_SYSTEM = (
     + JSON_ONLY
 )
 
+CONFIGURATOR_XML_SYSTEM = (
+    "You are the Configurator agent. Turn the Planner's plan into a simulator configuration written as XML.\n"
+    "Simulator parameters:\n" + parameter_docs() + "\n"
+    "Write one <scenario> element containing one child element per parameter, with the value as plain text, "
+    "for example <scenario><num_cells>7</num_cells><scheduler>round_robin</scheduler></scenario>. Use only "
+    "these parameter names, each at most once, no attributes, no nested elements and no DOCTYPE. Fill every "
+    "required parameter; leave optional ones out unless the plan states them. If you are given errors, fix "
+    "exactly those problems while keeping every value the user asked for whenever the simulator allows it. "
+    "Reply with the XML document only."
+)
+
 REVIEWER_SYSTEM = (
     "You are the Reviewer agent. Compare the user's original description with the proposed configuration "
     "and decide whether the configuration matches the user's intent (numbers, scheduler, mobility, carrier). "
@@ -47,6 +58,9 @@ class Agent:
     def __init__(self, role: str, system: str, llm: LLM) -> None:
         self.role, self.system, self.llm = role, system, llm
 
+    def ask_raw(self, user: str) -> str:
+        return self.llm.generate([{"role": "system", "content": self.system}, {"role": "user", "content": user}])
+
     def ask(self, user: str) -> tuple[dict, str]:
         """Return (parsed JSON, raw reply). Raises ValueError when the reply is not JSON."""
         raw = self.llm.generate([{"role": "system", "content": self.system}, {"role": "user", "content": user}])
@@ -57,8 +71,8 @@ def planner(llm: LLM) -> Agent:
     return Agent("planner", PLANNER_SYSTEM, llm)
 
 
-def configurator(llm: LLM) -> Agent:
-    return Agent("configurator", CONFIGURATOR_SYSTEM, llm)
+def configurator(llm: LLM, fmt: str = "json") -> Agent:
+    return Agent("configurator", CONFIGURATOR_XML_SYSTEM if fmt == "xml" else CONFIGURATOR_SYSTEM, llm)
 
 
 def reviewer(llm: LLM) -> Agent:
