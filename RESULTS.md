@@ -51,6 +51,6 @@ p = 0.0002; **multi-agent vs single LLM with the same retry loop p = 1.0**.
   shorten the time) was fixed before the run and is reported as is; it was not loosened afterwards.
   Treat the resource row as a benchmark-design finding more than a model failure.
 - Small benchmark (46 scenarios), two phrasings per category, one 7B model, greedy decoding.
-- The simulator is a teaching-grade model. "Correct" means matching the ground-truth configuration
-  properties, not that the simulated physics is calibrated.
+- "Correct" means matching the ground-truth configuration properties. The simulator is a compact
+  link-level model whose absolute throughput numbers are not calibrated against measurements.
 - Not tested here: a second model, a larger model, or a real third-party simulator.

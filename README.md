@@ -54,6 +54,8 @@ See `RESULTS.md` (written after the real-model run; nothing is reported before i
 
 ## Limits
 
-The simulator is a teaching-grade model, not a calibrated planning tool. The benchmark is small
+The simulator is a compact link-level model (log-distance path loss, shadowing, SINR-based rates)
+built to exercise the configuration workflow; its absolute throughput numbers are not calibrated
+against measurements. The benchmark is small
 (46 scenarios, greedy decoding, one model), so differences between systems are reported with
 confidence intervals and should be read as indicative.
