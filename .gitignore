@@ -1,0 +1,3 @@
+__pycache__/
+.pytest_cache/
+kaggle_build/ds/*.zip

@@ -1,0 +1,1 @@
+{"id": "saf2003/netsim-agents-eval", "title": "netsim agents eval", "code_file": "run_eval.py", "language": "python", "kernel_type": "script", "is_private": true, "enable_gpu": true, "enable_internet": true, "dataset_sources": ["saf2003/netsim-agents-code"]}
